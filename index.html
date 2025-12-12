@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aplikasi Jadwal & Daftar Dosen</title>
+
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  h2 { margin-top: 40px; }
+  input, select { padding: 6px; margin: 5px; width: 200px; }
+  button { padding: 6px 12px; margin: 5px; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  th, td { border: 1px solid #444; padding: 8px; text-align: center; }
+  th { background-color: #ddd; }
+  .container { border: 2px solid #aaa; padding: 15px; margin-bottom: 40px; border-radius: 10px; }
+</style>
+</head>
+
+<body>
+
+<h1>Aplikasi Jadwal Mata Kuliah & Daftar Dosen</h1>
+
+<!-- ==================== BAGIAN JADWAL ==================== -->
+<div class="container">
+<h2>📘 Tabel Jadwal Mata Kuliah</h2>
+
+<label>Hari:</label>
+<select id="hari">
+  <option value="">Pilih Hari</option>
+  <option>Senin</option>
+  <option>Selasa</option>
+  <option>Rabu</option>
+  <option>Kamis</option>
+  <option>Jumat</option>
+  <option>Sabtu</option>
+</select><br>
+
+<label>Mata Kuliah:</label>
+<input type="text" id="matkul"><br>
+
+<label>Jam:</label>
+<input type="text" id="jam"><br>
+
+<label>Ruang:</label>
+<input type="text" id="ruang"><br>
+
+<button onclick="tambahJadwal()">Tambah</button>
+<button onclick="updateJadwal()">Update</button>
+<button onclick="hapusJadwal()">Hapus</button>
+
+<table id="tabelJadwal">
+  <thead>
+    <tr>
+      <th>Hari</th>
+      <th>Mata Kuliah</th>
+      <th>Jam</th>
+      <th>Ruang</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+</div>
+
+
+<!-- ==================== BAGIAN DOSEN ==================== -->
+<div class="container">
+<h2> Tabel Daftar Dosen</h2>
+
+<label>Nama Dosen:</label>
+<input type="text" id="namaDosen"><br>
+
+<label>Mata Kuliah:</label>
+<input type="text" id="matkulDosen"><br>
+
+<label>Ruang:</label>
+<input type="text" id="ruangDosen"><br>
+
+<button onclick="tambahDosen()">Tambah</button>
+<button onclick="updateDosen()">Update</button>
+<button onclick="hapusDosen()">Hapus</button>
+
+<table id="tabelDosen">
+  <thead>
+    <tr>
+      <th>Nama Dosen</th>
+      <th>Mata Kuliah</th>
+      <th>Ruang</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+</div>
+
+
+<!-- ======================= SCRIPT ======================= -->
+<script>
+/* ---------------------- LOAD LOCALSTORAGE ---------------------- */
+let jadwal = JSON.parse(localStorage.getItem("jadwal")) || [];
+let dosen = JSON.parse(localStorage.getItem("dosen")) || [];
+
+let indexJadwal = -1;
+let indexDosen = -1;
+
+/* Save otomatis */
+function simpanJadwal() {
+  localStorage.setItem("jadwal", JSON.stringify(jadwal));
+}
+function simpanDosen() {
+  localStorage.setItem("dosen", JSON.stringify(dosen));
+}
+
+/* ---------------------- RENDER JADWAL ---------------------- */
+function renderJadwal() {
+  const tbody = document.querySelector('#tabelJadwal tbody');
+  tbody.innerHTML = '';
+
+  jadwal.forEach((item, i) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.hari}</td>
+      <td>${item.matkul}</td>
+      <td>${item.jam}</td>
+      <td>${item.ruang}</td>
+    `;
+    row.onclick = () => pilihJadwal(i);
+    tbody.appendChild(row);
+  });
+}
+
+function tambahJadwal() {
+  const hariVal = hari.value;
+  const matkulVal = matkul.value;
+  const jamVal = jam.value;
+  const ruangVal = ruang.value;
+
+  if (!hariVal || !matkulVal || !jamVal || !ruangVal) {
+    alert("Semua data wajib diisi!");
+    return;
+  }
+
+  jadwal.push({ hari: hariVal, matkul: matkulVal, jam: jamVal, ruang: ruangVal });
+  simpanJadwal();
+  renderJadwal();
+  clearJadwal();
+}
+
+function pilihJadwal(i) {
+  indexJadwal = i;
+  const data = jadwal[i];
+  hari.value = data.hari;
+  matkul.value = data.matkul;
+  jam.value = data.jam;
+  ruang.value = data.ruang;
+}
+
+function updateJadwal() {
+  if (indexJadwal < 0) {
+    alert("Pilih data terlebih dahulu!");
+    return;
+  }
+
+  jadwal[indexJadwal] = {
+    hari: hari.value,
+    matkul: matkul.value,
+    jam: jam.value,
+    ruang: ruang.value
+  };
+
+  simpanJadwal();
+  renderJadwal();
+  clearJadwal();
+}
+
+function hapusJadwal() {
+  if (indexJadwal < 0) {
+    alert("Pilih data terlebih dahulu!");
+    return;
+  }
+
+  jadwal.splice(indexJadwal, 1);
+  simpanJadwal();
+  renderJadwal();
+  clearJadwal();
+}
+
+function clearJadwal() {
+  hari.value = "";
+  matkul.value = "";
+  jam.value = "";
+  ruang.value = "";
+  indexJadwal = -1;
+}
+
+
+/* ---------------------- RENDER DOSEN ---------------------- */
+function renderDosen() {
+  const tbody = document.querySelector('#tabelDosen tbody');
+  tbody.innerHTML = '';
+
+  dosen.forEach((item, i) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.nama}</td>
+      <td>${item.matkul}</td>
+      <td>${item.ruang}</td>
+    `;
+    row.onclick = () => pilihDosen(i);
+    tbody.appendChild(row);
+  });
+}
+
+function tambahDosen() {
+  const nama = namaDosen.value;
+  const matkul = matkulDosen.value;
+  const ruang = ruangDosen.value;
+
+  if (!nama || !matkul || !ruang) {
+    alert("Semua data wajib diisi!");
+    return;
+  }
+
+  dosen.push({ nama, matkul, ruang });
+  simpanDosen();
+  renderDosen();
+  clearDosen();
+}
+
+function pilihDosen(i) {
+  indexDosen = i;
+  const data = dosen[i];
+  namaDosen.value = data.nama;
+  matkulDosen.value = data.matkul;
+  ruangDosen.value = data.ruang;
+}
+
+function updateDosen() {
+  if (indexDosen < 0) {
+    alert("Pilih data terlebih dahulu!");
+    return;
+  }
+
+  dosen[indexDosen] = {
+    nama: namaDosen.value,
+    matkul: matkulDosen.value,
+    ruang: ruangDosen.value
+  };
+
+  simpanDosen();
+  renderDosen();
+  clearDosen();
+}
+
+function hapusDosen() {
+  if (indexDosen < 0) {
+    alert("Pilih data terlebih dahulu!");
+    return;
+  }
+
+  dosen.splice(indexDosen, 1);
+  simpanDosen();
+  renderDosen();
+  clearDosen();
+}
+
+function clearDosen() {
+  namaDosen.value = "";
+  matkulDosen.value = "";
+  ruangDosen.value = "";
+  indexDosen = -1;
+}
+
+/* Render saat halaman dibuka */
+renderJadwal();
+renderDosen();
+</script>
+
+</body>
+</html>
